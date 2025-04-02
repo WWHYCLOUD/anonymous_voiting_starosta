@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Анонимное голосование</title>
+    <title>Голосование</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
         .hidden { display: none; }
@@ -14,18 +14,47 @@
     <h1>Голосование</h1>
     <div id="voting">
         <p>Выберите кандидата:</p>
-        <button onclick="vote()">Светлана</button>
-        <button onclick="vote()">Юлия</button>
-        <button onclick="vote()">Дарья</button>
+        <button onclick="vote('Светлана')">Светлана</button>
+        <button onclick="vote('Юлия')">Юлия</button>
+        <button onclick="vote('Дарья')">Дарья</button>
     </div>
     <div id="result" class="hidden">
         <h2>Голосование завершено!</h2>
     </div>
-    
+
     <script>
-        function vote() {
+        let votes = JSON.parse(localStorage.getItem('votes')) || {};
+
+        function vote(candidate) {
+            const userId = 'user123';  // Для примера, укажите уникальный идентификатор
+            if (votes[userId]) {
+                alert('Вы уже проголосовали!');
+                return;
+            }
+
+            votes[userId] = candidate;
+            localStorage.setItem('votes', JSON.stringify(votes));
+
             document.getElementById('voting').classList.add('hidden');
             document.getElementById('result').classList.remove('hidden');
+
+            sendVoteToServer(candidate);
+        }
+
+        function sendVoteToServer(candidate) {
+            fetch('/.netlify/functions/submitVote', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ candidate: candidate })
+            }).then(response => {
+                if (response.ok) {
+                    console.log('Голос успешно отправлен');
+                } else {
+                    console.log('Ошибка при отправке');
+                }
+            });
         }
     </script>
 </body>
